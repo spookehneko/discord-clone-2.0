@@ -3,6 +3,10 @@
 import * as z from 'zod';
 import {zodResolver} from "@hookform/resolvers/zod";
 import {useForm} from "react-hook-form";
+import {useEffect, useState} from "react";
+
+
+import {FileUpload} from "@/components/file-upload";
 
 import {
     Dialog,
@@ -23,6 +27,7 @@ import {
 } from "@/components/ui/form"
 
 import {Input} from '@/components/ui/input'
+
 import {Button} from '@/components/ui/button'
 
 const formSchema = z.object({
@@ -35,6 +40,12 @@ const formSchema = z.object({
 })
 
 export const InitialModal = () => {
+    // mounting for removing hydration warning
+    const [isMounted, setIsMounted] = useState<boolean>(false);
+
+    useEffect(() => {
+        setIsMounted(true)
+    }, [])
 
     const form = useForm({
         resolver: zodResolver(formSchema),
@@ -50,8 +61,12 @@ export const InitialModal = () => {
         console.log(values)
     }
 
+    if (!isMounted) {
+        return null;
+    }
+
     return <Dialog open>
-        <DialogContent className={'bg-white text-black p-0 overflow-hidden'}>
+        <DialogContent className={'bg-white text-black p-0 overflow-hidden rounded-lg'}>
             <DialogHeader className={'pt-8 px-6'}>
                 <DialogTitle className={'text-2xl text-center font-bold'}>
                     Customize your server
@@ -63,8 +78,18 @@ export const InitialModal = () => {
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className={'space-y-8'}>
                     <div className={'space-y-8 px-6'}>
-                        <div className={'flex items-center justify-center'}>
-                            TODO: Image Upload
+                        <div className={'flex items-center justify-center text-center'}>
+                            <FormField control={form.control} name={'imageUrl'} render={({field}) => (
+                                <FormItem>
+                                    <FormControl>
+                                        <FileUpload
+                                            endpoint={'serverImage'}
+                                            value={field.value}
+                                            onChange={field.onChange}
+                                        />
+                                    </FormControl>
+                                </FormItem>
+                            )} />
                         </div>
                         <FormField
                             control={form.control}
@@ -82,13 +107,14 @@ export const InitialModal = () => {
                                                {...field}
                                         />
                                     </FormControl>
+                                    <FormMessage className={'text-red-500'} />
                                 </FormItem>
                             )}
                         />
                     </div>
 
                     <DialogFooter className={'bg-gray-100 px-6 py-4'}>
-                            <Button disabled={isLoading}>
+                            <Button disabled={isLoading} variant={'primary'}>
                                 Create
                             </Button>
                     </DialogFooter>
