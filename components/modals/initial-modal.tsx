@@ -29,6 +29,8 @@ import {
 import {Input} from '@/components/ui/input'
 
 import {Button} from '@/components/ui/button'
+import axios from "axios";
+import {useRouter} from "next/navigation";
 
 const formSchema = z.object({
     name: z.string().min(1, {
@@ -42,7 +44,7 @@ const formSchema = z.object({
 export const InitialModal = () => {
     // mounting for removing hydration warning
     const [isMounted, setIsMounted] = useState<boolean>(false);
-
+    const router = useRouter();
     useEffect(() => {
         setIsMounted(true)
     }, [])
@@ -58,7 +60,14 @@ export const InitialModal = () => {
     const isLoading = form.formState.isSubmitting;
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        console.log(values)
+        try {
+            await axios.post('/api/servers', values);
+            form.reset();
+            router.refresh();
+            window.location.reload();
+        } catch (error) {
+            console.log(error)
+        }
     }
 
     if (!isMounted) {
@@ -89,7 +98,7 @@ export const InitialModal = () => {
                                         />
                                     </FormControl>
                                 </FormItem>
-                            )} />
+                            )}/>
                         </div>
                         <FormField
                             control={form.control}
@@ -107,16 +116,16 @@ export const InitialModal = () => {
                                                {...field}
                                         />
                                     </FormControl>
-                                    <FormMessage className={'text-red-500'} />
+                                    <FormMessage className={'text-red-500'}/>
                                 </FormItem>
                             )}
                         />
                     </div>
 
                     <DialogFooter className={'bg-gray-100 px-6 py-4'}>
-                            <Button disabled={isLoading} variant={'primary'}>
-                                Create
-                            </Button>
+                        <Button disabled={isLoading} variant={'primary'}>
+                            Create
+                        </Button>
                     </DialogFooter>
                 </form>
             </Form>
