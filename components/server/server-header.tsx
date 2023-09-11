@@ -10,6 +10,7 @@ import {
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import {ChevronDownIcon, LogOut, PlusCircle, Settings, Trash, UserPlus, Users} from "lucide-react";
+import {useModal} from "@/hooks/use-modal-store";
 
 interface ServerHeaderProps {
     server: ServerWithMembersWithProfiles;
@@ -17,6 +18,13 @@ interface ServerHeaderProps {
 }
 
 export const ServerHeader = ({server, role}: ServerHeaderProps) => {
+    /**
+     * onOpen: Modal store
+     * @see @/hooks/use-modal-store
+     * set type of modal and pass data
+     */
+    const {onOpen} = useModal()
+
     /**
      * isAdmin: For Admin
      */
@@ -43,7 +51,9 @@ export const ServerHeader = ({server, role}: ServerHeaderProps) => {
         {/*Dropdown content*/}
         <DropdownMenuContent className={'w-56 text-xs font-medium text-black dark:text-neutral-400 space-y-[2px]'}>
             {isModerator && (
-                <DropdownMenuItem className={'text-indigo-600 dark:text-indigo-400 px-3 py-2 text-sm cursor-pointer'}>
+                <DropdownMenuItem
+                    onClick={() => onOpen('invite', {server})}
+                    className={'text-indigo-600 dark:text-indigo-400 px-3 py-2 text-sm cursor-pointer'}>
                     Invite People
                     <UserPlus className={'ml-auto w-4 h-4'}/>
                 </DropdownMenuItem>
