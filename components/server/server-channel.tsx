@@ -5,6 +5,7 @@ import {Edit, Hash, Lock, Mic, Trash, Video} from "lucide-react";
 import {useParams, useRouter} from "next/navigation";
 import {cn} from "@/lib/utils";
 import {ActionTooptip} from "@/components/action-tooltip";
+import {useModal} from "@/hooks/use-modal-store";
 
 interface ServerChannelProps {
     channel: Channel;
@@ -19,6 +20,7 @@ const iconMap = {
 }
 
 export const ServerChannel = ({channel, server, role}: ServerChannelProps) => {
+    const {onOpen} = useModal()
     const params = useParams()
     const router = useRouter()
 
@@ -40,18 +42,21 @@ export const ServerChannel = ({channel, server, role}: ServerChannelProps) => {
                         Edit the channel
                     */}
                     <ActionTooptip label={"Edit"}>
-                        <Edit className={'hidden group-hover:block w-4 h-4 text-zinc-500 hover:text-zinc-600 dark:text-zinc-400 dark:hover:text-zinc-300 transition'}/>
+                        <Edit
+                            className={'hidden group-hover:block w-4 h-4 text-zinc-500 hover:text-zinc-600 dark:text-zinc-400 dark:hover:text-zinc-300 transition'}/>
                     </ActionTooptip>
                     {/*
                         Delete the channel
                     */}
                     <ActionTooptip label={"Delete"}>
-                        <Trash className={'hidden group-hover:block w-4 h-4 text-zinc-500 hover:text-zinc-600 dark:text-zinc-400 dark:hover:text-zinc-300 transition'}/>
+                        <Trash
+                            onClick={() => onOpen('deleteChannel', {server, channel})}
+                            className={'hidden group-hover:block w-4 h-4 text-zinc-500 hover:text-zinc-600 dark:text-zinc-400 dark:hover:text-zinc-300 transition'}/>
                     </ActionTooptip>
                 </div>
             )}
             {channel.name === "general" && (
-                <Lock className={'ml-auto w-4 h-4 text-zinc-500 dark:text-zinc-400 transition'} />
+                <Lock className={'ml-auto w-4 h-4 text-zinc-500 dark:text-zinc-400 transition'}/>
             )}
         </button>
     )
