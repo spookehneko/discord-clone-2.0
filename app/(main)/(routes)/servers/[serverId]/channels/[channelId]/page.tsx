@@ -51,7 +51,7 @@ const ChannelIdPage = async ({params}: ChannelIdPageProps) => {
                 channelId: channel.id,
                 serverId: channel.serverId
             }}
-            paramKay={'channelId'}
+            paramKey={'channelId'}
             paramValue={channel.id}
         />
 
