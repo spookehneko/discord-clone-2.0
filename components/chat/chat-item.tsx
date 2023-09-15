@@ -15,7 +15,8 @@ import {ActionTooptip} from "@/components/action-tooltip";
 import {Member, MemberRole, Profile} from "@prisma/client";
 import {Form, FormControl, FormItem, FormField} from "@/components/ui/form"
 import {Edit, FileIcon, ShieldAlert, ShieldCheck, Trash, X} from "lucide-react";
-
+import {useModal} from "@/hooks/use-modal-store";
+import {useParams, useRouter} from "next/navigation";
 
 interface ChatItemProps {
     id: string;
@@ -50,29 +51,18 @@ const formSchema = z.object({
 })
 
 export const ChatItem = ({id, content, member, timestamp, fileUrl, deleted, currentMember, isUpdated, socketUrl, socketQuery}: ChatItemProps) => {
+    /**
+     * modal control
+     */
+    const {onOpen} = useModal()
+
+    const params = useParams()
+    const router = useRouter()
 
     /**
      * state for editing and deleleting
      */
     const [isEditing, setIsEditing] = useState<boolean>(false)
-    const [isDeleteing, setIsDeleteing] = useState<boolean>(false)
-
-    /**
-     * form
-     */
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
-        defaultValues: {
-            content: content
-        }
-    })
-
-    /**
-     * Is loading?
-     */
-
-    const isLoading = form.formState.isLoading;
-
 
     /**
      * useEffect => escape to cancel
@@ -91,6 +81,41 @@ export const ChatItem = ({id, content, member, timestamp, fileUrl, deleted, curr
 
 
     /**
+     * form
+     */
+    const form = useForm<z.infer<typeof formSchema>>({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+            content: content
+        }
+    })
+    /**
+     * Is loading?
+     */
+
+    const isLoading = form.formState.isSubmitting;
+
+    /**
+     * edit content | form submit
+     */
+    const onSubmit = async (values: z.infer<typeof formSchema>)=> {
+        try {
+            // stringifyUrl
+            const url = qs.stringifyUrl({
+                url: `${socketUrl}/${id}`,
+                query: socketQuery
+            })
+            await axios.patch(url, values)
+
+            form.reset()
+            setIsEditing(false)
+
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    /**
      * useEffect for reset the form every change
      */
 
@@ -99,6 +124,16 @@ export const ChatItem = ({id, content, member, timestamp, fileUrl, deleted, curr
             content: content
         })
     }, [content, form]);
+
+    /**
+     * click on member redirect to member page
+     */
+    const onMemberClick = () => {
+        if(member.id === currentMember.id) {
+            return;
+        }
+        router.push(`/servers/${params?.serverId}/conversations/${member.id}`)
+    }
 
 
     /**
@@ -137,32 +172,17 @@ export const ChatItem = ({id, content, member, timestamp, fileUrl, deleted, curr
      * check if image file
      */
     const isImage = fileType !== "pdf" && fileUrl;
-    /**
-     * edit content | form submit
-     */
-    const onSubmit = async (values: z.infer<typeof formSchema>)=> {
-        try {
-            // stringifyUrl
-            const url = qs.stringifyUrl({
-                url: `${socketUrl}/${id}`,
-                query: socketQuery
-            })
-            await axios.patch(url, values)
 
-        } catch (error) {
-            console.log(error)
-        }
-    }
 
     return <div className={'relative group flex items-center hover:bg-black/5 p-4 transition w-full'}>
         <div className="group flex gap-x-2 items-start w-full">
-            <div className={'cursor-pointer hover:drop-shadow-md transition'}>
+            <div onClick={onMemberClick} className={'cursor-pointer hover:drop-shadow-md transition'}>
                 <UserAvatar src={member.profile.imageUrl}/>
             </div>
             <div className={'flex flex-col w-full'}>
                 <div className={'flex items-center gap-x-2'}>
                     <div className={'flex items-center'}>
-                        <p className={'font-semibold hover:underline cursor-pointer text-sm'}>{member.profile.name}</p>
+                        <p onClick={onMemberClick} className={'font-semibold hover:underline cursor-pointer text-sm'}>{member.profile.name}</p>
                         <ActionTooptip label={member.role}>
                             {icon}
                         </ActionTooptip>
@@ -247,6 +267,10 @@ export const ChatItem = ({id, content, member, timestamp, fileUrl, deleted, curr
                     )}
                     <ActionTooptip label={'Delete'}>
                         <Trash
+                            onClick={() => onOpen("deleteMessage", {
+                                apiUrl : `${socketUrl}/${id}`,
+                                query: socketQuery
+                            })}
                             className={'cursor-pointer ml-auto w-4 h-4 text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 transition'}/>
                     </ActionTooptip>
                 </div>
