@@ -1,17 +1,18 @@
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 /**
  * use origin for reading current URL
  */
 export const useOrigin = () => {
-    const [mounted, setMounted] = useState<boolean>(false)
+  const [mounted, setMounted] = useState<boolean>(false);
 
-    useEffect(() => {
-        setMounted(true)
-    }, [])
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
-    const origin = typeof window !== 'undefined' && window.location.origin || ''
+  const origin =
+    (typeof window !== "undefined" && window.location.origin) || "";
 
-    if (!mounted) return "";
+  if (!mounted) return "";
 
-    return origin;
-}
+  return origin;
+};
